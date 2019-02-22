@@ -9,6 +9,8 @@ enum operation
     DIV
 };
 
+double currentVal = 0.0;
+
 double calcVal = 0.0;
 bool addTrig;
 bool subTrig;
@@ -37,6 +39,7 @@ Calculator::Calculator(QWidget *parent) :
     connect(ui->BtnMul, SIGNAL(released()), this, SLOT(MathBtnPressed()));
     connect(ui->BtnDiv, SIGNAL(released()), this, SLOT(MathBtnPressed()));
     connect(ui->BtnEql, SIGNAL(released()), this, SLOT(EqualBtnPressed()));
+    numList.append(0.0);
 }
 
 Calculator::~Calculator()
@@ -49,43 +52,24 @@ void Calculator::NumPressed()
     QPushButton *btn = (QPushButton *)sender();
     QString btnValue = btn->text();
     QString displayValue = ui->Display->text();
-    if(displayValue.toDouble() == 0 || displayValue.toDouble() == 0.0)
+    if((displayValue.toDouble() == 0 || displayValue.toDouble() == 0.0) && displayValue.length() == 1 )
     {
         ui->Display->setText(btnValue);
     }
     else
     {
         QString newValue = displayValue + btnValue;
-        double dblValue = newValue.toDouble();
-        ui->Display->setText(QString::number(dblValue, 'g', 10));
+        ui->Display->setText(newValue);
     }
 }
 
 void Calculator::MathBtnPressed()
 {
-    addTrig = false;
-    subTrig = false;
-    mulTrig = false;
-    divTrig = false;
     QString displayVal = ui->Display->text();
-    calcVal = displayVal.toDouble();
     QPushButton *btn = (QPushButton *)sender();
     QString butValue = btn->text();
-    if(QString::compare(butValue, "*", Qt::CaseInsensitive) == 0)
-    {
-        mulTrig = true;
-    }
-    else if(QString::compare(butValue, "/", Qt::CaseInsensitive) == 0)
-    {
-        divTrig = true;
-    }
-    else if(QString::compare(butValue, "+", Qt::CaseInsensitive) == 0)
-    {
-        addTrig = true;
-    } else {
-        subTrig = true;
-    }
-    ui->Display->setText("");
+    QString newVal = displayVal + butValue;
+    ui->Display->setText(newVal);
 }
 
 void Calculator::EqualBtnPressed()
