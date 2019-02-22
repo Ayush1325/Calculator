@@ -1,11 +1,22 @@
 #include "calculator.h"
 #include "ui_calculator.h"
 
+enum operation
+{
+    ADD,
+    SUB,
+    MUL,
+    DIV
+};
+
 double calcVal = 0.0;
 bool addTrig;
 bool subTrig;
 bool mulTrig;
 bool divTrig;
+
+QVector<double> numList;
+QVector<operation> oprList;
 
 Calculator::Calculator(QWidget *parent) :
     QMainWindow(parent),
