@@ -20,8 +20,8 @@ private:
 
 private slots:
     void NumPressed();
-//    void MathBtnPressed();
-//    void EqualBtnPressed();
+    void MathBtnPressed();
+    void EqualBtnPressed();
 //    void AnsBtnPressed();
 //    void ACBtnPressed();
 //    void DelBtnPressed();

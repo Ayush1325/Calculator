@@ -2,6 +2,10 @@
 #include "ui_calculator.h"
 
 double calcVal = 0.0;
+bool addTrig;
+bool subTrig;
+bool mulTrig;
+bool divTrig;
 
 Calculator::Calculator(QWidget *parent) :
     QMainWindow(parent),
@@ -16,6 +20,12 @@ Calculator::Calculator(QWidget *parent) :
         numBtns[i] = Calculator::findChild<QPushButton *>(btnName);
         connect(numBtns[i], SIGNAL(released()), this, SLOT(NumPressed()));
     }
+
+    connect(ui->BtnAdd, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnSub, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnMul, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnDiv, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnEql, SIGNAL(released()), this, SLOT(EqualBtnPressed()));
 }
 
 Calculator::~Calculator()
@@ -32,9 +42,68 @@ void Calculator::NumPressed()
     {
         ui->Display->setText(btnValue);
     }
-    else {
+    else
+    {
         QString newValue = displayValue + btnValue;
         double dblValue = newValue.toDouble();
         ui->Display->setText(QString::number(dblValue, 'g', 10));
+    }
+}
+
+void Calculator::MathBtnPressed()
+{
+    addTrig = false;
+    subTrig = false;
+    mulTrig = false;
+    divTrig = false;
+    QString displayVal = ui->Display->text();
+    calcVal = displayVal.toDouble();
+    QPushButton *btn = (QPushButton *)sender();
+    QString butValue = btn->text();
+    if(QString::compare(butValue, "*", Qt::CaseInsensitive) == 0)
+    {
+        mulTrig = true;
+    }
+    else if(QString::compare(butValue, "/", Qt::CaseInsensitive) == 0)
+    {
+        divTrig = true;
+    }
+    else if(QString::compare(butValue, "+", Qt::CaseInsensitive) == 0)
+    {
+        addTrig = true;
+    } else {
+        subTrig = true;
+    }
+    ui->Display->setText("");
+}
+
+void Calculator::EqualBtnPressed()
+{
+    double sol = 0.0;
+    QString displayVal = ui->Display->text();
+    double dsplVal = displayVal.toDouble();
+    if(addTrig || subTrig || mulTrig || divTrig)
+    {
+        if(addTrig)
+        {
+            sol = calcVal + dsplVal;
+        }
+        else if(subTrig)
+        {
+            sol = calcVal - dsplVal;
+        }
+        else if(mulTrig)
+        {
+            sol = calcVal * dsplVal;
+        }
+        else if(divTrig)
+        {
+            sol = calcVal / dsplVal;
+        }
+        ui->Display->setText(QString::number(sol));
+    }
+    else
+    {
+
     }
 }
