@@ -1,5 +1,6 @@
 #include "calculator.h"
 #include "ui_calculator.h"
+#include <QRegularExpression>
 
 enum operation
 {
@@ -9,12 +10,6 @@ enum operation
     DIV
 };
 
-double calcVal = 0.0;
-bool addTrig;
-bool subTrig;
-bool mulTrig;
-bool divTrig;
-
 QVector<double> numList;
 QVector<int> oprList;
 
@@ -23,7 +18,7 @@ Calculator::Calculator(QWidget *parent) :
     ui(new Ui::Calculator)
 {
     ui->setupUi(this);
-    ui->Display->setText(QString::number(calcVal));
+    ui->Display->setText(QString::number(0));
     QPushButton *numBtns[10];
     for(int i = 0; i < 10; ++i)
     {
@@ -31,6 +26,7 @@ Calculator::Calculator(QWidget *parent) :
         numBtns[i] = Calculator::findChild<QPushButton *>(btnName);
         connect(numBtns[i], SIGNAL(released()), this, SLOT(NumPressed()));
     }
+    connect(ui->BtnDecimal, SIGNAL(released()), this, SLOT(NumPressed()));
 
     connect(ui->BtnAdd, SIGNAL(released()), this, SLOT(MathBtnPressed()));
     connect(ui->BtnSub, SIGNAL(released()), this, SLOT(MathBtnPressed()));
@@ -39,6 +35,8 @@ Calculator::Calculator(QWidget *parent) :
     connect(ui->BtnEql, SIGNAL(released()), this, SLOT(EqualBtnPressed()));
 
     connect(ui->BtnAC, SIGNAL(released()), this, SLOT(ACBtnPressed()));
+    connect(ui->BtnDel, SIGNAL(released()), this, SLOT(DelBtnPressed()));
+
     numList.append(0.0);
 }
 
@@ -82,14 +80,14 @@ void Calculator::MathBtnPressed()
 void Calculator::EqualBtnPressed()
 {
     QString displayVal = ui->Display->text();
-    QStringList nums = displayVal.split(QRegExp("[+-/*]"), QString::SkipEmptyParts);
+    QStringList nums = displayVal.split(QRegularExpression("[-+/*]"));
     QStringList::const_iterator i;
     for(i = nums.constBegin(); i != nums.constEnd(); ++i)
     {
         numList.append(i->toDouble());
     }
 
-    QStringList opr = displayVal.split(QRegExp("[0-9]+"), QString::SkipEmptyParts);
+    QStringList opr = displayVal.split(QRegExp("[0-9]+[\\.]*[0-9]*"), QString::SkipEmptyParts);
     for(i = opr.constBegin(); i != opr.constEnd(); ++i)
     {
         if(*i == "+")
@@ -158,4 +156,16 @@ void Calculator::ACBtnPressed()
     oprList.clear();
     numList.append(0);
     ui->Display->setText("0");
+}
+
+void Calculator::DelBtnPressed()
+{
+    QString text = ui->Display->text();
+    text.chop(1);
+    ui->Display->setText(text);
+}
+
+void Calculator::AnsBtnPressed()
+{
+
 }
