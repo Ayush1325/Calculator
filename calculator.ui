@@ -184,7 +184,7 @@ QPushButton:pressed {
      </widget>
     </item>
     <item row="1" column="4">
-     <widget class="QPushButton" name="BtnAC_2">
+     <widget class="QPushButton" name="BtnAC">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>

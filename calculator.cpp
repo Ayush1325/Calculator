@@ -9,8 +9,6 @@ enum operation
     DIV
 };
 
-double currentVal = 0.0;
-
 double calcVal = 0.0;
 bool addTrig;
 bool subTrig;
@@ -18,7 +16,7 @@ bool mulTrig;
 bool divTrig;
 
 QVector<double> numList;
-QVector<operation> oprList;
+QVector<int> oprList;
 
 Calculator::Calculator(QWidget *parent) :
     QMainWindow(parent),
@@ -39,6 +37,8 @@ Calculator::Calculator(QWidget *parent) :
     connect(ui->BtnMul, SIGNAL(released()), this, SLOT(MathBtnPressed()));
     connect(ui->BtnDiv, SIGNAL(released()), this, SLOT(MathBtnPressed()));
     connect(ui->BtnEql, SIGNAL(released()), this, SLOT(EqualBtnPressed()));
+
+    connect(ui->BtnAC, SIGNAL(released()), this, SLOT(ACBtnPressed()));
     numList.append(0.0);
 }
 
@@ -52,7 +52,7 @@ void Calculator::NumPressed()
     QPushButton *btn = (QPushButton *)sender();
     QString btnValue = btn->text();
     QString displayValue = ui->Display->text();
-    if((displayValue.toDouble() == 0 || displayValue.toDouble() == 0.0) && displayValue.length() == 1 )
+    if((displayValue.toDouble() == 0 || displayValue.toDouble() == 0.0) && displayValue.length() == 1 && displayValue != "-")
     {
         ui->Display->setText(btnValue);
     }
@@ -68,37 +68,94 @@ void Calculator::MathBtnPressed()
     QString displayVal = ui->Display->text();
     QPushButton *btn = (QPushButton *)sender();
     QString butValue = btn->text();
-    QString newVal = displayVal + butValue;
-    ui->Display->setText(newVal);
+    if((displayVal.toDouble() == 0 || displayVal.toDouble() == 0.0) && displayVal.length() == 1 )
+    {
+        ui->Display->setText(butValue);
+    }
+    else
+    {
+        QString newValue = displayVal + butValue;
+        ui->Display->setText(newValue);
+    }
 }
 
 void Calculator::EqualBtnPressed()
 {
-    double sol = 0.0;
     QString displayVal = ui->Display->text();
-    double dsplVal = displayVal.toDouble();
-    if(addTrig || subTrig || mulTrig || divTrig)
+    QStringList nums = displayVal.split(QRegExp("[+-/*]"), QString::SkipEmptyParts);
+    QStringList::const_iterator i;
+    for(i = nums.constBegin(); i != nums.constEnd(); ++i)
     {
-        if(addTrig)
-        {
-            sol = calcVal + dsplVal;
-        }
-        else if(subTrig)
-        {
-            sol = calcVal - dsplVal;
-        }
-        else if(mulTrig)
-        {
-            sol = calcVal * dsplVal;
-        }
-        else if(divTrig)
-        {
-            sol = calcVal / dsplVal;
-        }
-        ui->Display->setText(QString::number(sol));
+        numList.append(i->toDouble());
     }
-    else
-    {
 
+    QStringList opr = displayVal.split(QRegExp("[0-9]+"), QString::SkipEmptyParts);
+    for(i = opr.constBegin(); i != opr.constEnd(); ++i)
+    {
+        if(*i == "+")
+        {
+            oprList.append(ADD);
+        }
+        else if(*i == "-")
+        {
+            oprList.append(SUB);
+        }
+        else if(*i == "*")
+        {
+            oprList.append(MUL);
+        }
+        else if(*i == "/")
+        {
+            oprList.append(DIV);
+        }
     }
+
+    if((numList.length() - opr.length()) == 2)
+    {
+        oprList.prepend(ADD);
+    }
+
+    while(oprList.contains(DIV))
+    {
+        int index = oprList.indexOf(DIV);
+        double res = numList[index]/numList[index+1];
+        oprList.remove(index);
+        numList.remove(index+1);
+        numList.replace(index, res);
+    }
+    while(oprList.contains(MUL))
+    {
+        int index = oprList.indexOf(MUL);
+        double res = numList[index]*numList[index+1];
+        oprList.remove(index);
+        numList.remove(index+1);
+        numList.replace(index, res);
+    }
+    while(oprList.contains(SUB))
+    {
+        int index = oprList.indexOf(SUB);
+        double res = numList[index]-numList[index+1];
+        oprList.remove(index);
+        numList.remove(index+1);
+        numList.replace(index, res);
+    }
+    while(oprList.contains(ADD))
+    {
+        int index = oprList.indexOf(ADD);
+        double res = numList[index]+numList[index+1];
+        oprList.remove(index);
+        numList.remove(index+1);
+        numList.replace(index, res);
+    }
+
+    QString sol = QString::number(numList[0]);
+    ui->Display->setText(sol);
+}
+
+void Calculator::ACBtnPressed()
+{
+    numList.clear();
+    oprList.clear();
+    numList.append(0);
+    ui->Display->setText("0");
 }

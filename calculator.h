@@ -23,7 +23,7 @@ private slots:
     void MathBtnPressed();
     void EqualBtnPressed();
 //    void AnsBtnPressed();
-//    void ACBtnPressed();
+    void ACBtnPressed();
 //    void DelBtnPressed();
 };
 
