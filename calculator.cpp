@@ -1,13 +1,16 @@
 #include "calculator.h"
 #include "ui_calculator.h"
-#include <QRegularExpression>
+#include "QRegularExpression"
+#include "QtMath"
 
 enum operation
 {
     ADD,
     SUB,
     MUL,
-    DIV
+    DIV,
+    EXP,
+    POW
 };
 
 QVector<double> numList;
@@ -36,7 +39,8 @@ Calculator::Calculator(QWidget *parent) :
 
     connect(ui->BtnAC, SIGNAL(released()), this, SLOT(ACBtnPressed()));
     connect(ui->BtnDel, SIGNAL(released()), this, SLOT(DelBtnPressed()));
-
+    connect(ui->BtnExp, SIGNAL(released()), this, SLOT(ExpBtnPressed()));
+    connect(ui->BtnPow, SIGNAL(released()), this, SLOT(PowBtnPressed()));
     numList.append(0.0);
 }
 
@@ -80,7 +84,7 @@ void Calculator::MathBtnPressed()
 void Calculator::EqualBtnPressed()
 {
     QString displayVal = ui->Display->text();
-    QStringList nums = displayVal.split(QRegularExpression("[-+/*]"));
+    QStringList nums = displayVal.split(QRegularExpression("[-+E^/*]"));
     QStringList::const_iterator i;
     for(i = nums.constBegin(); i != nums.constEnd(); ++i)
     {
@@ -106,11 +110,37 @@ void Calculator::EqualBtnPressed()
         {
             oprList.append(DIV);
         }
+        else if(*i == "E")
+        {
+            oprList.append(EXP);
+        }
+        else if(*i == "^")
+        {
+            oprList.append(POW);
+        }
     }
 
     if((numList.length() - opr.length()) == 2)
     {
         oprList.prepend(ADD);
+    }
+
+    while(oprList.contains(EXP))
+    {
+        int index = oprList.indexOf(EXP);
+        double res = numList[index]*qPow(10, numList[index+1]);
+        oprList.remove(index);
+        numList.remove(index+1);
+        numList.replace(index, res);
+    }
+
+    while(oprList.contains(POW))
+    {
+        int index = oprList.indexOf(POW);
+        double res = qPow(numList[index], numList[index+1]);
+        oprList.remove(index);
+        numList.remove(index+1);
+        numList.replace(index, res);
     }
 
     while(oprList.contains(DIV))
@@ -165,7 +195,18 @@ void Calculator::DelBtnPressed()
     ui->Display->setText(text);
 }
 
-void Calculator::AnsBtnPressed()
+void Calculator::ExpBtnPressed()
 {
+    QString displayVal = ui->Display->text();
+    QString newValue = displayVal + "E";
+    ui->Display->setText(newValue);
+}
 
+void Calculator::PowBtnPressed()
+{
+    QPushButton *btn = (QPushButton *)sender();
+    QString btnValue = btn->text();
+    QString displayValue = ui->Display->text();
+    QString newValue = displayValue + btnValue;
+    ui->Display->setText(newValue);
 }
