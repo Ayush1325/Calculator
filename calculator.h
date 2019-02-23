@@ -17,7 +17,7 @@ public:
 
 private:
     Ui::Calculator *ui;
-    void Calculate();
+    double Calculate(QVector<double>, QVector<int>);
 
 private slots:
     void NumPressed();

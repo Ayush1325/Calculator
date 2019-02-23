@@ -37,6 +37,8 @@ Calculator::Calculator(QWidget *parent) :
     connect(ui->BtnSub, SIGNAL(released()), this, SLOT(MathBtnPressed()));
     connect(ui->BtnMul, SIGNAL(released()), this, SLOT(MathBtnPressed()));
     connect(ui->BtnDiv, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnBracketStart, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnBracketEnd, SIGNAL(released()), this, SLOT(MathBtnPressed()));
     connect(ui->BtnEql, SIGNAL(released()), this, SLOT(EqualBtnPressed()));
 
     connect(ui->BtnAC, SIGNAL(released()), this, SLOT(ACBtnPressed()));
@@ -56,7 +58,7 @@ void Calculator::NumPressed()
     QPushButton *btn = (QPushButton *)sender();
     QString btnValue = btn->text();
     QString displayValue = ui->Display->text();
-    if((displayValue.toDouble() == 0 || displayValue.toDouble() == 0.0) && displayValue.length() == 1 && displayValue != "-")
+    if((displayValue.toDouble() == 0 || displayValue.toDouble() == 0.0) && displayValue.length() == 1 && displayValue != "-" && displayValue != "(")
     {
         ui->Display->setText(btnValue);
     }
@@ -72,7 +74,7 @@ void Calculator::MathBtnPressed()
     QString displayVal = ui->Display->text();
     QPushButton *btn = (QPushButton *)sender();
     QString butValue = btn->text();
-    if((displayVal.toDouble() == 0 || displayVal.toDouble() == 0.0) && displayVal.length() == 1 )
+    if((displayVal.toDouble() == 0 || displayVal.toDouble() == 0.0) && displayVal.length() == 1 && displayVal != "(")
     {
         ui->Display->setText(butValue);
     }
@@ -88,7 +90,7 @@ void Calculator::EqualBtnPressed()
 
     QString displayVal = ui->Display->text();
     QRegularExpression regex = QRegularExpression("[-+E^/*\\)\\(]");
-    QStringList nums = displayVal.split(regex);
+    QStringList nums = displayVal.split(regex, QString::SkipEmptyParts);
     QStringList::const_iterator i;
     for(i = nums.constBegin(); i != nums.constEnd(); ++i)
     {
@@ -133,15 +135,30 @@ void Calculator::EqualBtnPressed()
         }
     }
 
-    if((numList.length() - oprList.length()) == 2)
+    if(displayVal.front() != '-')
     {
         oprList.prepend(ADD);
     }
 
-//    while()
+    while(oprList.contains(BROPEN))
+    {
+        int indexStart = oprList.indexOf(BROPEN);
+        int indexEnd = oprList.indexOf(BRCLOSE);
+        QVector<double> tempNums = numList.mid(indexStart, indexEnd - indexStart);
+        QVector<int> tempOpr = oprList.mid(indexStart + 1, indexEnd - indexStart - 1);
+        if(tempNums.length() == tempOpr.length() && tempOpr[0] == SUB)
+        {
+            tempNums.prepend(0);
+            numList.insert(indexStart + 1, 0.0);
+        }
+        double res = Calculate(tempNums, tempOpr);
+        oprList.remove(indexStart, indexEnd - indexStart + 1);
+        numList.remove(indexStart + 1, indexEnd - indexStart - 1);
+        numList.replace(indexStart, res);
+    }
 
-    Calculate();
-    QString sol = QString::number(numList[0]);
+    double res = Calculate(numList, oprList);
+    QString sol = QString::number(res);
     ui->Display->setText(sol);
     numList.clear();
     oprList.clear();
@@ -178,56 +195,58 @@ void Calculator::PowBtnPressed()
     ui->Display->setText(newValue);
 }
 
-void Calculator::Calculate()
+double Calculator::Calculate(QVector<double> nums, QVector<int> oprs)
 {
-    while(oprList.contains(EXP))
+    while(oprs.contains(EXP))
     {
-        int index = oprList.indexOf(EXP);
-        double res = numList[index]*qPow(10, numList[index+1]);
-        oprList.remove(index);
-        numList.remove(index+1);
-        numList.replace(index, res);
+        int index = oprs.indexOf(EXP);
+        double res = nums[index]*qPow(10, nums[index+1]);
+        oprs.remove(index);
+        nums.remove(index+1);
+        nums.replace(index, res);
     }
 
-    while(oprList.contains(POW))
+    while(oprs.contains(POW))
     {
-        int index = oprList.indexOf(POW);
-        double res = qPow(numList[index], numList[index+1]);
-        oprList.remove(index);
-        numList.remove(index+1);
-        numList.replace(index, res);
+        int index = oprs.indexOf(POW);
+        double res = qPow(nums[index], nums[index+1]);
+        oprs.remove(index);
+        nums.remove(index+1);
+        nums.replace(index, res);
     }
 
-    while(oprList.contains(DIV))
+    while(oprs.contains(DIV))
     {
-        int index = oprList.indexOf(DIV);
-        double res = numList[index]/numList[index+1];
-        oprList.remove(index);
-        numList.remove(index+1);
-        numList.replace(index, res);
+        int index = oprs.indexOf(DIV);
+        double res = nums[index]/nums[index+1];
+        oprs.remove(index);
+        nums.remove(index+1);
+        nums.replace(index, res);
     }
-    while(oprList.contains(MUL))
+    while(oprs.contains(MUL))
     {
-        int index = oprList.indexOf(MUL);
-        double res = numList[index]*numList[index+1];
-        oprList.remove(index);
-        numList.remove(index+1);
-        numList.replace(index, res);
+        int index = oprs.indexOf(MUL);
+        double res = nums[index]*nums[index+1];
+        oprs.remove(index);
+        nums.remove(index+1);
+        nums.replace(index, res);
     }
-    while(oprList.contains(SUB))
+    while(oprs.contains(SUB))
     {
-        int index = oprList.indexOf(SUB);
-        double res = numList[index]-numList[index+1];
-        oprList.remove(index);
-        numList.remove(index+1);
-        numList.replace(index, res);
+        int index = oprs.indexOf(SUB);
+        double res = nums[index]-nums[index+1];
+        oprs.remove(index);
+        nums.remove(index+1);
+        nums.replace(index, res);
     }
-    while(oprList.contains(ADD))
+    while(oprs.contains(ADD))
     {
-        int index = oprList.indexOf(ADD);
-        double res = numList[index]+numList[index+1];
-        oprList.remove(index);
-        numList.remove(index+1);
-        numList.replace(index, res);
+        int index = oprs.indexOf(ADD);
+        double res = nums[index]+nums[index+1];
+        oprs.remove(index);
+        nums.remove(index+1);
+        nums.replace(index, res);
     }
+
+    return nums[0];
 }
