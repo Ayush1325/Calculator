@@ -11,7 +11,15 @@ enum operation
     DIV,
     POW,
     COMBINATION,
-    PERMUTATION
+    PERMUTATION,
+    SIN,
+    COS,
+    TAN,
+    SININV,
+    COSINV,
+    TANINV,
+    LOG,
+    LOGN
 };
 
 Calculator::Calculator(QWidget *parent) :
@@ -44,6 +52,16 @@ Calculator::Calculator(QWidget *parent) :
 
     connect(ui->BtnPermutation, SIGNAL(released()), this, SLOT(PermutationBtnPressed()));
     connect(ui->BtnCombination, SIGNAL(released()), this, SLOT(CombinationBtnPressed()));
+    connect(ui->BtnSin, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnCos, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnTan, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnSinInv, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnCosInv, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnTanInv, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnLog, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnLn, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnPi, SIGNAL(released()), this, SLOT(MathBtnPressed()));
+    connect(ui->BtnE, SIGNAL(released()), this, SLOT(MathBtnPressed()));
 }
 
 Calculator::~Calculator()
@@ -146,6 +164,70 @@ double Calculator::Calculate(QVector<double> nums, QVector<int> oprs)
         nums.replace(index, res);
     }
 
+    while(oprs.contains(LOG))
+    {
+        int index = oprs.indexOf(LOG);
+        double res = qLn(nums[index]) * M_LOG10E;
+        oprs.remove(index);
+        nums.replace(index, res);
+    }
+
+    while(oprs.contains(LOGN))
+    {
+        int index = oprs.indexOf(LOGN);
+        double res = qLn(nums[index]);
+        oprs.remove(index);
+        nums.replace(index, res);
+    }
+
+    while(oprs.contains(SIN))
+    {
+        int index = oprs.indexOf(SIN);
+        double res = qSin(qDegreesToRadians(nums[index]));
+        oprs.remove(index);
+        nums.replace(index, res);
+    }
+
+    while(oprs.contains(COS))
+    {
+        int index = oprs.indexOf(COS);
+        double res = qCos(qDegreesToRadians(nums[index]));
+        oprs.remove(index);
+        nums.replace(index, res);
+    }
+
+    while(oprs.contains(TAN))
+    {
+        int index = oprs.indexOf(TAN);
+        double res = qTan(qDegreesToRadians(nums[index]));
+        oprs.remove(index);
+        nums.replace(index, res);
+    }
+
+    while(oprs.contains(SININV))
+    {
+        int index = oprs.indexOf(SININV);
+        double res = qAsin(qDegreesToRadians(nums[index]));
+        oprs.remove(index);
+        nums.replace(index, res);
+    }
+
+    while(oprs.contains(COSINV))
+    {
+        int index = oprs.indexOf(COSINV);
+        double res = qAcos(qDegreesToRadians(nums[index]));
+        oprs.remove(index);
+        nums.replace(index, res);
+    }
+
+    while(oprs.contains(TANINV))
+    {
+        int index = oprs.indexOf(TANINV);
+        double res = qAtan(qDegreesToRadians(nums[index]));
+        oprs.remove(index);
+        nums.replace(index, res);
+    }
+
     while(oprs.contains(COMBINATION))
     {
         int index = oprs.indexOf(COMBINATION);
@@ -238,6 +320,46 @@ double Calculator::Bracket(QStringList exp)
         else if(*i == "C")
         {
             oprList.append(COMBINATION);
+        }
+        else if(*i == "log")
+        {
+            oprList.append(LOG);
+        }
+        else if(*i == "ln")
+        {
+            oprList.append(LOGN);
+        }
+        else if(*i == "sin")
+        {
+            oprList.append(SIN);
+        }
+        else if(*i == "cos")
+        {
+            oprList.append(COS);
+        }
+        else if(*i == "tan")
+        {
+            oprList.append(TAN);
+        }
+        else if(*i == "sin-1")
+        {
+            oprList.append(SININV);
+        }
+        else if(*i == "cos-1")
+        {
+            oprList.append(COSINV);
+        }
+        else if(*i == "tan-1")
+        {
+            oprList.append(TANINV);
+        }
+        else if (*i == "π")
+        {
+            numList.append(M_PI);
+        }
+        else if (*i == "e")
+        {
+            numList.append(M_E);
         }
         else
         {
