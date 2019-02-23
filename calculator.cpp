@@ -15,9 +15,6 @@ enum operation
     BRCLOSE
 };
 
-QVector<double> numList;
-QVector<int> oprList;
-
 Calculator::Calculator(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Calculator)
@@ -45,7 +42,6 @@ Calculator::Calculator(QWidget *parent) :
     connect(ui->BtnDel, SIGNAL(released()), this, SLOT(DelBtnPressed()));
     connect(ui->BtnExp, SIGNAL(released()), this, SLOT(ExpBtnPressed()));
     connect(ui->BtnPow, SIGNAL(released()), this, SLOT(PowBtnPressed()));
-    numList.append(0.0);
 }
 
 Calculator::~Calculator()
@@ -88,6 +84,8 @@ void Calculator::MathBtnPressed()
 void Calculator::EqualBtnPressed()
 {
 
+    QVector<double> numList;
+    QVector<int> oprList;
     QString displayVal = ui->Display->text();
     QRegularExpression regex = QRegularExpression("[-+E^/*\\)\\(]");
     QStringList nums = displayVal.split(regex, QString::SkipEmptyParts);
@@ -135,29 +133,13 @@ void Calculator::EqualBtnPressed()
         }
     }
 
-    if(displayVal.front() != '-')
+    if(displayVal.front() != '(')
     {
-        oprList.prepend(ADD);
+        oprList.prepend(BROPEN);
+        oprList.append(BRCLOSE);
     }
 
-    while(oprList.contains(BROPEN))
-    {
-        int indexStart = oprList.indexOf(BROPEN);
-        int indexEnd = oprList.indexOf(BRCLOSE);
-        QVector<double> tempNums = numList.mid(indexStart, indexEnd - indexStart);
-        QVector<int> tempOpr = oprList.mid(indexStart + 1, indexEnd - indexStart - 1);
-        if(tempNums.length() == tempOpr.length() && tempOpr[0] == SUB)
-        {
-            tempNums.prepend(0);
-            numList.insert(indexStart + 1, 0.0);
-        }
-        double res = Calculate(tempNums, tempOpr);
-        oprList.remove(indexStart, indexEnd - indexStart + 1);
-        numList.remove(indexStart + 1, indexEnd - indexStart - 1);
-        numList.replace(indexStart, res);
-    }
-
-    double res = Calculate(numList, oprList);
+    double res = Brackets(numList, oprList);
     QString sol = QString::number(res);
     ui->Display->setText(sol);
     numList.clear();
@@ -166,9 +148,6 @@ void Calculator::EqualBtnPressed()
 
 void Calculator::ACBtnPressed()
 {
-    numList.clear();
-    oprList.clear();
-    numList.append(0);
     ui->Display->setText("0");
 }
 
@@ -248,5 +227,26 @@ double Calculator::Calculate(QVector<double> nums, QVector<int> oprs)
         nums.replace(index, res);
     }
 
+    return nums[0];
+}
+
+double Calculator::Brackets(QVector<double> nums, QVector<int> oprs)
+{
+    while(oprs.contains(BROPEN))
+    {
+        int indexStart = oprs.indexOf(BROPEN);
+        int indexEnd = oprs.indexOf(BRCLOSE);
+        QVector<double> tempNums = nums.mid(indexStart, indexEnd - indexStart);
+        QVector<int> tempOpr = oprs.mid(indexStart + 1, indexEnd - indexStart - 1);
+        if(tempNums.length() == tempOpr.length() && tempOpr[0] == SUB)
+        {
+            tempNums.prepend(0);
+            nums.insert(indexStart + 1, 0.0);
+        }
+        double res = Calculate(tempNums, tempOpr);
+        oprs.remove(indexStart, indexEnd - indexStart + 1);
+        nums.remove(indexStart + 1, indexEnd - indexStart - 1);
+        nums.replace(indexStart, res);
+    }
     return nums[0];
 }
