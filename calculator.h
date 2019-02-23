@@ -19,6 +19,9 @@ private:
     Ui::Calculator *ui;
     double Calculate(QVector<double>, QVector<int>);
     double Bracket(QStringList);
+    double nCr(double, double);
+    double nPr(double, double);
+    double factorial(double);
 
 private slots:
     void NumPressed();
@@ -28,6 +31,8 @@ private slots:
     void DelBtnPressed();
     void ExpBtnPressed();
     void PowBtnPressed();
+    void PermutationBtnPressed();
+    void CombinationBtnPressed();
 };
 
 #endif // CALCULATOR_H

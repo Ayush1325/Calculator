@@ -10,6 +10,8 @@ enum operation
     MUL,
     DIV,
     POW,
+    COMBINATION,
+    PERMUTATION
 };
 
 Calculator::Calculator(QWidget *parent) :
@@ -39,6 +41,9 @@ Calculator::Calculator(QWidget *parent) :
     connect(ui->BtnDel, SIGNAL(released()), this, SLOT(DelBtnPressed()));
     connect(ui->BtnExp, SIGNAL(released()), this, SLOT(ExpBtnPressed()));
     connect(ui->BtnPow, SIGNAL(released()), this, SLOT(PowBtnPressed()));
+
+    connect(ui->BtnPermutation, SIGNAL(released()), this, SLOT(PermutationBtnPressed()));
+    connect(ui->BtnCombination, SIGNAL(released()), this, SLOT(CombinationBtnPressed()));
 }
 
 Calculator::~Calculator()
@@ -141,6 +146,24 @@ double Calculator::Calculate(QVector<double> nums, QVector<int> oprs)
         nums.replace(index, res);
     }
 
+    while(oprs.contains(COMBINATION))
+    {
+        int index = oprs.indexOf(COMBINATION);
+        double res = nCr(nums[index], nums[index+1]);
+        oprs.remove(index);
+        nums.remove(index+1);
+        nums.replace(index, res);
+    }
+
+    while(oprs.contains(PERMUTATION))
+    {
+        int index = oprs.indexOf(PERMUTATION);
+        double res = nPr(nums[index], nums[index+1]);
+        oprs.remove(index);
+        nums.remove(index+1);
+        nums.replace(index, res);
+    }
+
     while(oprs.contains(DIV))
     {
         int index = oprs.indexOf(DIV);
@@ -149,6 +172,7 @@ double Calculator::Calculate(QVector<double> nums, QVector<int> oprs)
         nums.remove(index+1);
         nums.replace(index, res);
     }
+
     while(oprs.contains(MUL))
     {
         int index = oprs.indexOf(MUL);
@@ -173,7 +197,6 @@ double Calculator::Calculate(QVector<double> nums, QVector<int> oprs)
         nums.remove(index+1);
         nums.replace(index, res);
     }
-
     return nums[0];
 }
 
@@ -208,10 +231,51 @@ double Calculator::Bracket(QStringList exp)
         {
             oprList.append(POW);
         }
+        else if(*i == "P")
+        {
+            oprList.append(PERMUTATION);
+        }
+        else if(*i == "C")
+        {
+            oprList.append(COMBINATION);
+        }
         else
         {
             numList.append(i->toDouble());
         }
     }
     return Calculate(numList, oprList);
+}
+
+double Calculator::nPr(double n, double r)
+{
+    return factorial(n)/factorial(n - r);
+}
+
+double Calculator::nCr(double n, double r)
+{
+    return factorial(n)/(factorial(n - r) * factorial(r));
+}
+
+double Calculator::factorial(double num)
+{
+    if(num == 1)
+    {
+        return num;
+    }
+    return num * factorial(num - 1);
+}
+
+void Calculator::PermutationBtnPressed()
+{
+    QString displayVal = ui->Display->text();
+    QString newValue = displayVal + " P ";
+    ui->Display->setText(newValue);
+}
+
+void Calculator::CombinationBtnPressed()
+{
+    QString displayVal = ui->Display->text();
+    QString newValue = displayVal + " C ";
+    ui->Display->setText(newValue);
 }
