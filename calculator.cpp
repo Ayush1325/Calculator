@@ -10,7 +10,9 @@ enum operation
     MUL,
     DIV,
     EXP,
-    POW
+    POW,
+    BROPEN,
+    BRCLOSE
 };
 
 QVector<double> numList;
@@ -85,46 +87,58 @@ void Calculator::EqualBtnPressed()
 {
 
     QString displayVal = ui->Display->text();
-    QStringList nums = displayVal.split(QRegularExpression("[-+E^/*]"));
+    QRegularExpression regex = QRegularExpression("[-+E^/*\\)\\(]");
+    QStringList nums = displayVal.split(regex);
     QStringList::const_iterator i;
     for(i = nums.constBegin(); i != nums.constEnd(); ++i)
     {
         numList.append(i->toDouble());
     }
-
-    QStringList opr = displayVal.split(QRegExp("[0-9]+[\\.]*[0-9]*"), QString::SkipEmptyParts);
-    for(i = opr.constBegin(); i != opr.constEnd(); ++i)
+    QRegularExpressionMatchIterator x =  regex.globalMatch(displayVal);
+    while(x.hasNext())
     {
-        if(*i == "+")
+        QRegularExpressionMatch mtch = x.next();
+        QString temp = mtch.captured();
+        if(temp == "+")
         {
             oprList.append(ADD);
         }
-        else if(*i == "-")
+        else if(temp == "-")
         {
             oprList.append(SUB);
         }
-        else if(*i == "*")
+        else if(temp == "*")
         {
             oprList.append(MUL);
         }
-        else if(*i == "/")
+        else if(temp == "/")
         {
             oprList.append(DIV);
         }
-        else if(*i == "E")
+        else if(temp == "E")
         {
             oprList.append(EXP);
         }
-        else if(*i == "^")
+        else if(temp == "^")
         {
             oprList.append(POW);
         }
+        else if(temp == "(")
+        {
+            oprList.append(BROPEN);
+        }
+        else if(temp == ")")
+        {
+            oprList.append(BRCLOSE);
+        }
     }
 
-    if((numList.length() - opr.length()) == 2)
+    if((numList.length() - oprList.length()) == 2)
     {
         oprList.prepend(ADD);
     }
+
+//    while()
 
     Calculate();
     QString sol = QString::number(numList[0]);
