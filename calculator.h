@@ -18,7 +18,7 @@ public:
 private:
     Ui::Calculator *ui;
     double Calculate(QVector<double>, QVector<int>);
-    double Brackets(QVector<double>, QVector<int>);
+    double Bracket(QStringList);
 
 private slots:
     void NumPressed();

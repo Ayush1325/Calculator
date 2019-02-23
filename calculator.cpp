@@ -9,10 +9,7 @@ enum operation
     SUB,
     MUL,
     DIV,
-    EXP,
     POW,
-    BROPEN,
-    BRCLOSE
 };
 
 Calculator::Calculator(QWidget *parent) :
@@ -72,11 +69,11 @@ void Calculator::MathBtnPressed()
     QString butValue = btn->text();
     if((displayVal.toDouble() == 0 || displayVal.toDouble() == 0.0) && displayVal.length() == 1 && displayVal != "(")
     {
-        ui->Display->setText(butValue);
+        ui->Display->setText(butValue + " ");
     }
     else
     {
-        QString newValue = displayVal + butValue;
+        QString newValue = displayVal + " " + butValue + " ";
         ui->Display->setText(newValue);
     }
 }
@@ -87,63 +84,22 @@ void Calculator::EqualBtnPressed()
     QVector<double> numList;
     QVector<int> oprList;
     QString displayVal = ui->Display->text();
-    QRegularExpression regex = QRegularExpression("[-+E^/*\\)\\(]");
-    QStringList nums = displayVal.split(regex, QString::SkipEmptyParts);
-    QStringList::const_iterator i;
-    for(i = nums.constBegin(); i != nums.constEnd(); ++i)
-    {
-        numList.append(i->toDouble());
+    QStringList expression = displayVal.split(" ", QString::SkipEmptyParts);
+    expression.prepend("(");
+    expression.append(")");
+    while (expression.length() > 1) {
+        int indexStart = expression.lastIndexOf("(");
+        int indexEnd = expression.indexOf(")", indexStart);
+        QStringList part =  expression.mid(indexStart + 1, indexEnd - indexStart - 1);
+        double res = Bracket(part);
+        for (int j = 0; j < indexEnd - indexStart; ++j)
+        {
+            expression.removeAt(indexStart + 1);
+        }
+        expression.replace(indexStart, QString::number(res));
     }
-    QRegularExpressionMatchIterator x =  regex.globalMatch(displayVal);
-    while(x.hasNext())
-    {
-        QRegularExpressionMatch mtch = x.next();
-        QString temp = mtch.captured();
-        if(temp == "+")
-        {
-            oprList.append(ADD);
-        }
-        else if(temp == "-")
-        {
-            oprList.append(SUB);
-        }
-        else if(temp == "*")
-        {
-            oprList.append(MUL);
-        }
-        else if(temp == "/")
-        {
-            oprList.append(DIV);
-        }
-        else if(temp == "E")
-        {
-            oprList.append(EXP);
-        }
-        else if(temp == "^")
-        {
-            oprList.append(POW);
-        }
-        else if(temp == "(")
-        {
-            oprList.append(BROPEN);
-        }
-        else if(temp == ")")
-        {
-            oprList.append(BRCLOSE);
-        }
-    }
-
-    if(displayVal.front() != '(')
-    {
-        oprList.prepend(BROPEN);
-        oprList.append(BRCLOSE);
-    }
-
-    double res = Brackets(numList, oprList);
-    QString sol = QString::number(res);
+    QString sol = expression[0];
     ui->Display->setText(sol);
-    numList.clear();
-    oprList.clear();
 }
 
 void Calculator::ACBtnPressed()
@@ -170,21 +126,12 @@ void Calculator::PowBtnPressed()
     QPushButton *btn = (QPushButton *)sender();
     QString btnValue = btn->text();
     QString displayValue = ui->Display->text();
-    QString newValue = displayValue + btnValue;
+    QString newValue = displayValue + " " + btnValue + " ";
     ui->Display->setText(newValue);
 }
 
 double Calculator::Calculate(QVector<double> nums, QVector<int> oprs)
 {
-    while(oprs.contains(EXP))
-    {
-        int index = oprs.indexOf(EXP);
-        double res = nums[index]*qPow(10, nums[index+1]);
-        oprs.remove(index);
-        nums.remove(index+1);
-        nums.replace(index, res);
-    }
-
     while(oprs.contains(POW))
     {
         int index = oprs.indexOf(POW);
@@ -230,23 +177,41 @@ double Calculator::Calculate(QVector<double> nums, QVector<int> oprs)
     return nums[0];
 }
 
-double Calculator::Brackets(QVector<double> nums, QVector<int> oprs)
+double Calculator::Bracket(QStringList exp)
 {
-    while(oprs.contains(BROPEN))
+    QVector<double> numList;
+    QVector<int> oprList;
+    if(exp.first() == "-")
     {
-        int indexStart = oprs.indexOf(BROPEN);
-        int indexEnd = oprs.indexOf(BRCLOSE);
-        QVector<double> tempNums = nums.mid(indexStart, indexEnd - indexStart);
-        QVector<int> tempOpr = oprs.mid(indexStart + 1, indexEnd - indexStart - 1);
-        if(tempNums.length() == tempOpr.length() && tempOpr[0] == SUB)
-        {
-            tempNums.prepend(0);
-            nums.insert(indexStart + 1, 0.0);
-        }
-        double res = Calculate(tempNums, tempOpr);
-        oprs.remove(indexStart, indexEnd - indexStart + 1);
-        nums.remove(indexStart + 1, indexEnd - indexStart - 1);
-        nums.replace(indexStart, res);
+        exp.prepend(0);
     }
-    return nums[0];
+    QStringList::const_iterator i;
+    for(i = exp.constBegin(); i != exp.constEnd(); ++i)
+    {
+        if(*i == "+")
+        {
+            oprList.append(ADD);
+        }
+        else if(*i == "-")
+        {
+            oprList.append(SUB);
+        }
+        else if(*i == "*")
+        {
+            oprList.append(MUL);
+        }
+        else if(*i == "/")
+        {
+            oprList.append(DIV);
+        }
+        else if(*i == "^")
+        {
+            oprList.append(POW);
+        }
+        else
+        {
+            numList.append(i->toDouble());
+        }
+    }
+    return Calculate(numList, oprList);
 }
