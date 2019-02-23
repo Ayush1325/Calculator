@@ -17,6 +17,7 @@ public:
 
 private:
     Ui::Calculator *ui;
+    void Calculate();
 
 private slots:
     void NumPressed();

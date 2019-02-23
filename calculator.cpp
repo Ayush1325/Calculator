@@ -83,6 +83,7 @@ void Calculator::MathBtnPressed()
 
 void Calculator::EqualBtnPressed()
 {
+
     QString displayVal = ui->Display->text();
     QStringList nums = displayVal.split(QRegularExpression("[-+E^/*]"));
     QStringList::const_iterator i;
@@ -125,6 +126,46 @@ void Calculator::EqualBtnPressed()
         oprList.prepend(ADD);
     }
 
+    Calculate();
+    QString sol = QString::number(numList[0]);
+    ui->Display->setText(sol);
+    numList.clear();
+    oprList.clear();
+}
+
+void Calculator::ACBtnPressed()
+{
+    numList.clear();
+    oprList.clear();
+    numList.append(0);
+    ui->Display->setText("0");
+}
+
+void Calculator::DelBtnPressed()
+{
+    QString text = ui->Display->text();
+    text.chop(1);
+    ui->Display->setText(text);
+}
+
+void Calculator::ExpBtnPressed()
+{
+    QString displayVal = ui->Display->text();
+    QString newValue = displayVal + "E";
+    ui->Display->setText(newValue);
+}
+
+void Calculator::PowBtnPressed()
+{
+    QPushButton *btn = (QPushButton *)sender();
+    QString btnValue = btn->text();
+    QString displayValue = ui->Display->text();
+    QString newValue = displayValue + btnValue;
+    ui->Display->setText(newValue);
+}
+
+void Calculator::Calculate()
+{
     while(oprList.contains(EXP))
     {
         int index = oprList.indexOf(EXP);
@@ -175,38 +216,4 @@ void Calculator::EqualBtnPressed()
         numList.remove(index+1);
         numList.replace(index, res);
     }
-
-    QString sol = QString::number(numList[0]);
-    ui->Display->setText(sol);
-}
-
-void Calculator::ACBtnPressed()
-{
-    numList.clear();
-    oprList.clear();
-    numList.append(0);
-    ui->Display->setText("0");
-}
-
-void Calculator::DelBtnPressed()
-{
-    QString text = ui->Display->text();
-    text.chop(1);
-    ui->Display->setText(text);
-}
-
-void Calculator::ExpBtnPressed()
-{
-    QString displayVal = ui->Display->text();
-    QString newValue = displayVal + "E";
-    ui->Display->setText(newValue);
-}
-
-void Calculator::PowBtnPressed()
-{
-    QPushButton *btn = (QPushButton *)sender();
-    QString btnValue = btn->text();
-    QString displayValue = ui->Display->text();
-    QString newValue = displayValue + btnValue;
-    ui->Display->setText(newValue);
 }
